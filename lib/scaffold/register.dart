@@ -126,6 +126,7 @@ class _RegisterState extends State<Register> {
       },
     );
   }
+  
 
   Widget showButton() {
     return Row(
