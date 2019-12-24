@@ -1,4 +1,7 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:ungtot/utility/my_style.dart';
 
 class Register extends StatefulWidget {
@@ -8,6 +11,7 @@ class Register extends StatefulWidget {
 
 class _RegisterState extends State<Register> {
   // Field
+  File file;
 
   // Method
   Widget nameForm() {
@@ -95,15 +99,31 @@ class _RegisterState extends State<Register> {
     return OutlineButton.icon(
       icon: Icon(Icons.add_a_photo),
       label: Text('Camera'),
-      onPressed: () {},
+      onPressed: () {
+        cameraAndGalleryThread(ImageSource.camera);
+      },
     );
+  }
+
+  Future<void> cameraAndGalleryThread(ImageSource imageSource) async {
+    var object = await ImagePicker.pickImage(
+      source: imageSource,
+      maxWidth: 800.0,
+      maxHeight: 600.0,
+    );
+
+    setState(() {
+      file = object;
+    });
   }
 
   Widget galleryButton() {
     return OutlineButton.icon(
       icon: Icon(Icons.add_photo_alternate),
       label: Text('Gallery'),
-      onPressed: () {},
+      onPressed: () {
+        cameraAndGalleryThread(ImageSource.gallery);
+      },
     );
   }
 
@@ -121,10 +141,12 @@ class _RegisterState extends State<Register> {
     return Container(
       height: MediaQuery.of(context).size.height * 0.4,
       width: MediaQuery.of(context).size.width * 0.9,
-      child: Image.asset(
-        'images/avatar.png',
-        fit: BoxFit.contain,
-      ),
+      child: file == null
+          ? Image.asset(
+              'images/avatar.png',
+              fit: BoxFit.contain,
+            )
+          : Image.file(file),
     );
   }
 
