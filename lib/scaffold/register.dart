@@ -1,3 +1,4 @@
+
 import 'dart:io';
 import 'dart:math';
 
@@ -7,6 +8,12 @@ import 'package:image_picker/image_picker.dart';
 import 'package:ungtot/utility/my_style.dart';
 import 'package:ungtot/utility/normal_dialog.dart';
 
+
+
+
+
+
+
 class Register extends StatefulWidget {
   @override
   _RegisterState createState() => _RegisterState();
@@ -15,7 +22,7 @@ class Register extends StatefulWidget {
 class _RegisterState extends State<Register> {
   // Field
   File file;
-  String name, user, password;
+  String name, user, password, avatar;
   final formKey = GlobalKey<FormState>();
 
   // Method
@@ -188,26 +195,51 @@ class _RegisterState extends State<Register> {
     );
   }
 
-  Future<void> uploadPictureToServer()async{
-
+  Future<void> uploadPictureToServer() async {
     Random random = Random();
     int i = random.nextInt(10000);
     String namePicture = 'avatar$i.jpg';
     print('namePicture = $namePicture');
 
+    avatar = 'https://www.androidthai.in.th/tot/MasterUng/$namePicture';
+
     String urlAPI = 'https://www.androidthai.in.th/tot/saveFileMaster.php';
 
     try {
-
       Map<String, dynamic> map = Map();
       map['file'] = UploadFileInfo(file, namePicture);
       FormData formData = FormData.from(map);
 
       Response response = await Dio().post(urlAPI, data: formData);
       print('response = $response');
-      
-    } catch (e) {
+
+      var result = response.data;
+
+      String string = result['message'];
+      print('string = $string');
+
+      if (string == 'File uploaded successfully') {
+        insertDatatoMySQL();
+      } else {
+        print('Cannot Upload');
+      }
+    } catch (e) {}
+  }
+
+  Future<void> insertDatatoMySQL()async{
+
+    String url = 'https://www.androidthai.in.th/tot/addDataMaster.php?isAdd=true&Name=$name&User=$user&Password=$password&Avatar=$avatar';
+
+    Response response = await Dio().get(url);
+    var result = response.data;
+    print('result = $result');
+
+    if (result.toString() == 'true') {
+      Navigator.of(context).pop();
+    } else {
+      normalDialog(context, 'Cannot Register', 'Please Try Again');
     }
+
 
   }
 

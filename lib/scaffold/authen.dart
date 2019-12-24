@@ -1,6 +1,12 @@
+import 'dart:convert';
+
+import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
+import 'package:ungtot/models/user_model.dart';
+import 'package:ungtot/scaffold/my_service.dart';
 import 'package:ungtot/scaffold/register.dart';
 import 'package:ungtot/utility/my_style.dart';
+import 'package:ungtot/utility/normal_dialog.dart';
 
 class Authen extends StatefulWidget {
   @override
@@ -9,6 +15,8 @@ class Authen extends StatefulWidget {
 
 class _AuthenState extends State<Authen> {
   // Field
+  String user, password;
+  final formKey = GlobalKey<FormState>();
 
   // Method
   Widget mySizeBox() {
@@ -26,8 +34,42 @@ class _AuthenState extends State<Authen> {
         'Sign In',
         style: TextStyle(color: Colors.white),
       ),
-      onPressed: () {},
+      onPressed: () {
+        formKey.currentState.save();
+
+        if (user.isEmpty || password.isEmpty) {
+          normalDialog(context, 'Have Space', 'Please Fill All Every Blank');
+        } else {
+          checkAuthen();
+        }
+      },
     );
+  }
+
+  Future<void> checkAuthen() async {
+    String url =
+        'https://www.androidthai.in.th/tot/getUserWhereUserMaster.php?isAdd=true&User=$user';
+
+    Response response = await Dio().get(url);
+    var result = json.decode(response.data);
+    print('result ==============>>>>>>>> $result');
+
+    if (result.toString() == 'null') {
+      normalDialog(context, 'User False', 'No $user in my Database');
+    } else {
+      for (var map in result) {
+        UserModel userModel = UserModel.fromJSON(map);
+        if (password == userModel.password) {
+          print('Welcome ${userModel.name}');
+
+          MaterialPageRoute materialPageRoute = MaterialPageRoute(builder: (BuildContext buildContext){return MyService();});
+          Navigator.of(context).pushAndRemoveUntil(materialPageRoute, (Route<dynamic> route){return false;});
+
+        } else {
+          normalDialog(context, 'Password False', 'Please Try Agains Password False');
+        }
+      }
+    }
   }
 
   Widget signUpButton() {
@@ -39,9 +81,11 @@ class _AuthenState extends State<Authen> {
       onPressed: () {
         print('You Click Sign Up');
 
-        MaterialPageRoute materialPageRoute = MaterialPageRoute(builder: (BuildContext buildContext){return Register();});
+        MaterialPageRoute materialPageRoute =
+            MaterialPageRoute(builder: (BuildContext buildContext) {
+          return Register();
+        });
         Navigator.of(context).push(materialPageRoute);
-
       },
     );
   }
@@ -61,7 +105,14 @@ class _AuthenState extends State<Authen> {
     return Container(
       width: MediaQuery.of(context).size.width * 0.7,
       child: TextFormField(
-        decoration: InputDecoration(labelText: 'User :'),
+        onSaved: (String string) {
+          user = string.trim();
+        },
+        decoration: InputDecoration(
+          enabledBorder: OutlineInputBorder(
+              borderSide: BorderSide(color: MyStyle().textColor)),
+          hintText: 'User :',
+        ),
       ),
     );
   }
@@ -70,8 +121,15 @@ class _AuthenState extends State<Authen> {
     return Container(
       width: MediaQuery.of(context).size.width * 0.7,
       child: TextFormField(
+        onSaved: (String string) {
+          password = string.trim();
+        },
         obscureText: true,
-        decoration: InputDecoration(labelText: 'Password :'),
+        decoration: InputDecoration(
+          enabledBorder: OutlineInputBorder(
+              borderSide: BorderSide(color: MyStyle().textColor)),
+          hintText: 'Password :',
+        ),
       ),
     );
   }
@@ -109,16 +167,21 @@ class _AuthenState extends State<Authen> {
         ),
         child: Center(
           child: SingleChildScrollView(
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: <Widget>[
-                showLogo(),
-                mySizeBox(),
-                showAppName(),
-                userForm(),
-                passwordForm(),
-                showButton(),
-              ],
+            child: Form(
+              key: formKey,
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: <Widget>[
+                  showLogo(),
+                  mySizeBox(),
+                  showAppName(),
+                  mySizeBox(),
+                  userForm(),
+                  mySizeBox(),
+                  passwordForm(),
+                  showButton(),
+                ],
+              ),
             ),
           ),
         ),
