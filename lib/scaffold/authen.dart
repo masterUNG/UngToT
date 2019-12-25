@@ -40,13 +40,24 @@ class _AuthenState extends State<Authen> {
         if (user.isEmpty || password.isEmpty) {
           normalDialog(context, 'Have Space', 'Please Fill All Every Blank');
         } else {
-          checkAuthen();
+          checkAuthenGetType();
+          // checkAuthenPostType();
         }
       },
     );
   }
 
-  Future<void> checkAuthen() async {
+  Future<void> checkAuthenPostType() async {
+    String url = 'http://iservice.totinnovate.com/WebAPI/LoginPost';
+    Map<String, dynamic> map = Map();
+    map['UserName'] = user;
+    map['Password'] = password;
+
+    Response response = await Dio().post(url, data: map);
+    print('response =====>>> $response');
+  }
+
+  Future<void> checkAuthenGetType() async {
     String url =
         'https://www.androidthai.in.th/tot/getUserWhereUserMaster.php?isAdd=true&User=$user';
 
@@ -62,11 +73,19 @@ class _AuthenState extends State<Authen> {
         if (password == userModel.password) {
           print('Welcome ${userModel.name}');
 
-          MaterialPageRoute materialPageRoute = MaterialPageRoute(builder: (BuildContext buildContext){return MyService();});
-          Navigator.of(context).pushAndRemoveUntil(materialPageRoute, (Route<dynamic> route){return false;});
-
+          MaterialPageRoute materialPageRoute =
+              MaterialPageRoute(builder: (BuildContext buildContext) {
+            return MyService(
+              userModel: userModel,
+            );
+          });
+          Navigator.of(context).pushAndRemoveUntil(materialPageRoute,
+              (Route<dynamic> route) {
+            return false;
+          });
         } else {
-          normalDialog(context, 'Password False', 'Please Try Agains Password False');
+          normalDialog(
+              context, 'Password False', 'Please Try Agains Password False');
         }
       }
     }
