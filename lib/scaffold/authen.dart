@@ -1,7 +1,9 @@
 import 'dart:convert';
 
 import 'package:dio/dio.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:ungtot/models/user_model.dart';
 import 'package:ungtot/scaffold/my_service.dart';
 import 'package:ungtot/scaffold/register.dart';
@@ -17,8 +19,56 @@ class _AuthenState extends State<Authen> {
   // Field
   String user, password;
   final formKey = GlobalKey<FormState>();
+  bool remember = false;
+  UserModel userModel;
 
   // Method
+  @override
+  void initState() {
+    super.initState();
+    findToken();
+    readSharedPreferance();
+  }
+
+  Future<void> findToken() async {
+    FirebaseMessaging firebaseMessaging = FirebaseMessaging();
+    await firebaseMessaging.getToken().then((response) {
+      print('Token ===>>> ${response.toString()}');
+    });
+  }
+
+  Future<void> readSharedPreferance() async {
+    try {
+      SharedPreferences sharedPreferences =
+          await SharedPreferences.getInstance();
+
+      bool remember = sharedPreferences.getBool('Remember');
+
+      if (remember) {
+        List<String> list = sharedPreferences.getStringList('User');
+        userModel = UserModel(list[0], list[1], list[2], list[3], list[4]);
+
+        routeToMyService();
+      }
+    } catch (e) {}
+  }
+
+  Widget rememberMe() {
+    return Container(
+      width: 250.0,
+      child: CheckboxListTile(
+        controlAffinity: ListTileControlAffinity.leading,
+        title: Text('Remember Me'),
+        value: remember,
+        onChanged: (bool value) {
+          setState(() {
+            remember = value;
+          });
+        },
+      ),
+    );
+  }
+
   Widget mySizeBox() {
     return SizedBox(
       width: 5.0,
@@ -60,35 +110,57 @@ class _AuthenState extends State<Authen> {
   Future<void> checkAuthenGetType() async {
     String url =
         'https://www.androidthai.in.th/tot/getUserWhereUserMaster.php?isAdd=true&User=$user';
-
     Response response = await Dio().get(url);
     var result = json.decode(response.data);
     print('result ==============>>>>>>>> $result');
-
     if (result.toString() == 'null') {
       normalDialog(context, 'User False', 'No $user in my Database');
     } else {
       for (var map in result) {
-        UserModel userModel = UserModel.fromJSON(map);
+        userModel = UserModel.fromJSON(map);
         if (password == userModel.password) {
           print('Welcome ${userModel.name}');
-
-          MaterialPageRoute materialPageRoute =
-              MaterialPageRoute(builder: (BuildContext buildContext) {
-            return MyService(
-              userModel: userModel,
-            );
-          });
-          Navigator.of(context).pushAndRemoveUntil(materialPageRoute,
-              (Route<dynamic> route) {
-            return false;
-          });
+          if (remember) {
+            saveSharePreference();
+          } else {
+            routeToMyService();
+          }
         } else {
           normalDialog(
               context, 'Password False', 'Please Try Agains Password False');
         }
       }
     }
+  }
+
+  Future<void> saveSharePreference() async {
+    print('userModel ===>>> $userModel');
+
+    List<String> list = List();
+    list.add(userModel.id);
+    list.add(userModel.name);
+    list.add(userModel.user);
+    list.add(userModel.password);
+    list.add(userModel.avatar);
+
+    SharedPreferences sharedPreferences = await SharedPreferences.getInstance();
+    sharedPreferences.setStringList('User', list);
+    sharedPreferences.setBool('Remember', remember);
+
+    routeToMyService();
+  }
+
+  void routeToMyService() {
+    MaterialPageRoute materialPageRoute =
+        MaterialPageRoute(builder: (BuildContext buildContext) {
+      return MyService(
+        userModel: userModel,
+      );
+    });
+    Navigator.of(context).pushAndRemoveUntil(materialPageRoute,
+        (Route<dynamic> route) {
+      return false;
+    });
   }
 
   Widget signUpButton() {
@@ -122,16 +194,21 @@ class _AuthenState extends State<Authen> {
 
   Widget userForm() {
     return Container(
+      decoration: BoxDecoration(
+          color: Colors.white.withOpacity(0.3),
+          borderRadius: BorderRadius.circular(10.0)),
       width: MediaQuery.of(context).size.width * 0.7,
       child: TextFormField(
         onSaved: (String string) {
           user = string.trim();
         },
         decoration: InputDecoration(
-          enabledBorder: OutlineInputBorder(
-              borderSide: BorderSide(color: MyStyle().textColor)),
-          hintText: 'User :',
-        ),
+            prefix: Icon(
+              Icons.account_box,
+              color: Colors.white,size: 36.0,
+            ),
+            hintText: 'User :',
+            hintStyle: TextStyle(color: Colors.white)),
       ),
     );
   }
@@ -198,6 +275,7 @@ class _AuthenState extends State<Authen> {
                   userForm(),
                   mySizeBox(),
                   passwordForm(),
+                  rememberMe(),
                   showButton(),
                 ],
               ),

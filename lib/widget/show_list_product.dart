@@ -76,11 +76,14 @@ class _ShowListProductState extends State<ShowListProduct> {
 
   Widget showPicture(int index) {
     return Container(
+      padding: EdgeInsets.all(16.0),
       width: MediaQuery.of(context).size.width * 0.5,
       height: MediaQuery.of(context).size.width * 0.4,
-      decoration: BoxDecoration(borderRadius: BorderRadius.circular(30),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(20),
         image: DecorationImage(
           image: NetworkImage(productModels[index].path),
+          fit: BoxFit.cover,
         ),
       ),
     );

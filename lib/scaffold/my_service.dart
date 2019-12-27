@@ -1,8 +1,14 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:ungtot/models/user_model.dart';
+import 'package:ungtot/scaffold/authen.dart';
+import 'package:ungtot/scaffold/webview_youtube.dart';
 import 'package:ungtot/utility/my_style.dart';
-import 'package:ungtot/widget/show_infomation.dart';
+import 'package:ungtot/widget/list_video.dart';
 import 'package:ungtot/widget/show_list_product.dart';
+import 'package:vibration/vibration.dart';
 
 class MyService extends StatefulWidget {
   final UserModel userModel;
@@ -23,40 +29,83 @@ class _MyServiceState extends State<MyService> {
     super.initState();
     myUserModel = widget.userModel;
     print('NameLogin = ${myUserModel.name}');
-    currentWidget = ShowListProduct(userModel: myUserModel,);
+    currentWidget = ShowListProduct(
+      userModel: myUserModel,
+    );
+  }
+
+  Widget menuVibration() {
+    return ListTile(
+      onTap: () {
+        Vibration.vibrate(duration: 2000);
+        Navigator.of(context).pop();
+      },
+      leading: Icon(Icons.vibration),
+      title: Text('Vibration'),
+      subtitle: Text('Test Vibration'),
+    );
   }
 
   Widget menuShowList() {
-    return ListTile(onTap: (){
-      setState(() {
-        currentWidget = ShowListProduct();
-      });
-      Navigator.of(context).pop();
-    },
+    return ListTile(
+      onTap: () {
+        setState(() {
+          currentWidget = ShowListProduct();
+        });
+        Navigator.of(context).pop();
+      },
       leading: Icon(Icons.filter_1),
       title: Text('Show List Product'),
       subtitle: Text('Expand or Description Menu Show List Product'),
     );
   }
 
+  Widget menuSignOut() {
+    return ListTile(
+      onTap: () {
+        signOutProcess();
+      },
+      leading: Icon(Icons.exit_to_app),
+      title: Text('Sign Out'),
+      subtitle: Text('Expand or Description Sign Out'),
+    );
+  }
+
+  Future<void> signOutProcess()async{
+    SharedPreferences sharedPreferences = await SharedPreferences.getInstance();
+    sharedPreferences.clear();
+    // Exit App Only
+    // exit(0);
+
+    // Back to Authen Page
+    MaterialPageRoute materialPageRoute = MaterialPageRoute(builder: (BuildContext buildContext){return Authen();});
+    Navigator.of(context).pushAndRemoveUntil(materialPageRoute, (Route<dynamic> route){return false;});
+  }
+
   Widget menuShowInfo() {
-    return ListTile(onTap: (){
-      setState(() {
-        currentWidget = ShowInfomation();
-      });
-      Navigator.of(context).pop();
-    },
-      leading: Icon(Icons.filter_2),
-      title: Text('Show Infomation'),
-      subtitle: Text('Expand or Description Menu Infomation'),
+    return ListTile(
+      onTap: () {
+        setState(() {
+          currentWidget = ListVideo();
+        });
+        Navigator.of(context).pop();
+      },
+      leading: Icon(Icons.video_call),
+      title: Text('List Video'),
+      subtitle: Text('Expand ListVideo'),
     );
   }
 
   Widget menuShowQRcode() {
     return ListTile(
-      leading: Icon(Icons.filter_3),
-      title: Text('QR code and Bar Code'),
-      subtitle: Text('Expand or Description Menu QR code and Bar Code'),
+      onTap: () {
+        MaterialPageRoute materialPageRoute = MaterialPageRoute(
+            builder: (BuildContext buildContext) => WebViewYouTube());
+        Navigator.of(context).push(materialPageRoute);
+      },
+      leading: Icon(Icons.ondemand_video),
+      title: Text('You Tube'),
+      subtitle: Text('Show WebView on YouTube'),
     );
   }
 
@@ -106,6 +155,9 @@ class _MyServiceState extends State<MyService> {
           Divider(),
           menuShowQRcode(),
           Divider(),
+          menuVibration(),
+          Divider(),
+          menuSignOut(),
         ],
       ),
     );

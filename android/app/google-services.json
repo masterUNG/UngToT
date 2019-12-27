@@ -1,0 +1,40 @@
+{
+  "project_info": {
+    "project_number": "893544508557",
+    "firebase_url": "https://ungtot-c065a.firebaseio.com",
+    "project_id": "ungtot-c065a",
+    "storage_bucket": "ungtot-c065a.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:893544508557:android:928af34570c9ac704106c4",
+        "android_client_info": {
+          "package_name": "com.flutterthailand.ungtot"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "893544508557-19va91vi84l7k2ckebtnp0pflt0qseha.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyC_asrHwMVknFI7xGBDm4zRNHJRfQuK9CQ"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "893544508557-19va91vi84l7k2ckebtnp0pflt0qseha.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
